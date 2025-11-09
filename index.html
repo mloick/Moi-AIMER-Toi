@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notre Histoire ❤️</title>
+    <style>
+        /* [Le même CSS que précédemment - je le garde identique] */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .particle { position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.6); border-radius: 50%; animation: float 15s infinite; }
+        @keyframes float { 0%,100%{ transform:translateY(0)translateX(0); opacity:0} 10%,90%{opacity:1} 100%{ transform:translateY(-100vh)translateX(100px); opacity:0 } }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(102,126,234,0.95); backdrop-filter: blur(20px);
+            padding: 20px 0; z-index:1000; box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+            animation: slideDown 0.5s ease;
+        }
+        @keyframes slideDown { from{transform:translateY(-100%);} to{transform:translateY(0);} }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .logo { font-size: 1.5em; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .heart { display: inline-block; animation: heartbeat 1.5s infinite; }
+        @keyframes heartbeat { 0%,100%{ transform:scale(1);}10%,30%{transform:scale(1.1);}20%,40%{ transform:scale(0.9);} }
+        .nav-links { display: flex; gap: 10px; list-style: none; }
+        .nav-links a { color:white; text-decoration:none; padding: 12px 25px; border-radius: 25px; transition: all 0.3s; font-weight:500; }
+        .nav-links a:hover,.nav-links a.active { background:rgba(255,255,255,0.2); transform:translateY(-2px); }
+
+        .mobile-menu-btn { display: none; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;}
+
+        .countdown-mini { position: fixed; top:80px; right:20px; background:rgba(102,126,234,0.9); backdrop-filter: blur(10px); padding: 15px 20px; border-radius: 20px; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:999; display: none; animation: slideInRight 0.5s; }
+        @keyframes slideInRight { from{transform:translateX(100%);} to{transform:translateX(0);} }
+        .countdown-mini-content { display: flex; gap: 15px; font-size: 0.9em; }
+        .countdown-mini-item { text-align: center; }
+        .countdown-mini-number { display: block; font-size:1.5em; font-weight:bold; }
+        .edit-btn { background:rgba(255,255,255,0.3); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 30px; border-radius:25px; cursor:pointer; font-size:1em; margin:10px; transition:all 0.3s; backdrop-filter: blur(5px);}
+        .edit-btn:hover { background:rgba(255,255,255,0.4); transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.2);}
+        .container { max-width:1200px; margin:0 auto; padding:120px 20px 40px; position:relative; z-index:2;}
+
+        .hero { text-align:center; padding:60px 20px; animation:fadeInUp 1s ease; }
+        @keyframes fadeInUp { from{opacity:0; transform:translateY(50px);} to{opacity:1; transform:translateY(0);} }
+        .hero h1 { font-size:4em; margin-bottom:20px; text-shadow:2px 2px 20px rgba(0,0,0,0.3); font-weight:300; }
+        .hero p { font-size:1.8em; opacity:0.95; margin-bottom:40px; }
+
+        .countdown-section { background:rgba(255,255,255,0.15); backdrop-filter:blur(20px); border-radius:30px; padding:50px; margin:40px 0; border:1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.2); animation:fadeIn 1s ease 0.3s both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px);} to {opacity:1; transform:translateY(0);} }
+        .countdown { display: flex; justify-content:center; gap:30px; flex-wrap:wrap; margin-top:30px; }
+        .countdown-item { background:rgba(255,255,255,0.2); padding:30px; border-radius:25px; min-width:140px; text-align:center; backdrop-filter:blur(10px); transition:all 0.3s; border:1px solid rgba(255,255,255,0.3);}
+        .countdown-item:hover { transform:translateY(-10px) scale(1.05); box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+        .countdown-number { font-size:3.5em; font-weight:bold; display:block; text-shadow:2px 2px 10px rgba(0,0,0,0.2);}
+        .countdown-label { font-size:1.2em; margin-top:10px; opacity:0.95; }
+
+        .section { background:rgba(255,255,255,0.15); backdrop-filter:blur(20px); border-radius:30px; padding:50px; margin:40px 0; border:1px solid rgba(255,255,255,0.3); box-shadow:0 8px 32px rgba(0,0,0,0.2); animation:fadeIn 1s ease; }
+        h2 { font-size:2.8em; margin-bottom:30px; text-align:center; font-weight:300; text-shadow:2px 2px 10px rgba(0,0,0,0.2);}
+        h3 { font-size:2em; margin-bottom:20px; font-weight:300; }
+
+        .intro-content { font-size:1.3em; line-height:2; text-align:center; background:rgba(255,255,255,0.1); padding:40px; border-radius:20px; margin:30px 0;}
+        textarea { width:100%; min-height:200px; background:rgba(255,255,255,0.95); border:none; border-radius:15px; padding:20px; font-size:1.1em; font-family:inherit; color:#333; resize:vertical;}
+        input[type="text"] { width:100%; background:rgba(255,255,255,0.95); border:none; border-radius:15px; padding:15px 20px; font-size:1.1em; font-family:inherit; color:#333; margin:10px 0;}
+        .hidden { display:none!important; }
+
+        .timeline { position:relative; padding:20px 0;}
+        .memory-item { display:flex; gap:30px; margin:40px 0; align-items:center; }
+        .memory-item:nth-child(even) { flex-direction:row-reverse; }
+        .memory-photo { flex:1; min-width:300px; max-width:500px;}
+        .photo-container { position:relative; aspect-ratio:4/3; border-radius:20px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.3); transition:transform 0.3s; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:4em; cursor:pointer; }
+        .photo-container:hover { transform:scale(1.05) rotate(2deg);}
+        .photo-container img { width:100%; height:100%; object-fit:cover; display:none;}
+        .photo-container span { font-size:3em; }
+        .memory-text { flex:1; background:rgba(255,255,255,0.15); padding:30px; border-radius:20px; backdrop-filter:blur(10px);}
+        .memory-text h3 { margin-bottom:15px; text-align:left;}
+        .memory-text p { font-size:1.2em; line-height:1.8;}
+
+        .add-memory-btn { display:block; margin:40px auto; background:rgba(255,255,255,0.3); color:white; border:2px dashed rgba(255,255,255,0.5); padding:20px 40px; border-radius:25px; cursor:pointer; font-size:1.2em; transition:all 0.3s;}
+        .add-memory-btn:hover { background:rgba(255,255,255,0.4); transform:translateY(-5px);}
+        .perspective-box { background:rgba(255,255,255,0.15); backdrop-filter:blur(15px); border-radius:25px; padding:40px; margin:30px 0; border:1px solid rgba(255,255,255,0.3); transition:all 0.3s;}
+        .perspective-box:hover { transform:translateX(10px); box-shadow:0 10px 40px rgba(0,0,0,0.3);}
+        .perspective-content { font-size:1.25em; line-height:1.9; margin:20px 0; min-height:100px;}
+        .signature { text-align:right; font-style:italic; font-size:1.3em; margin-top:20px; opacity:0.9;}
+        .page { display:none; }
+        .page.active { display:block; }
+        .text-center { text-align:center;}
+        
+        .delete-btn { background:rgba(255,99,71,0.5); color:white; border:1px solid rgba(255,99,71,0.6); padding:8px 20px; border-radius:20px; cursor:pointer; font-size:0.9em; margin:5px; transition:all 0.3s;}
+        .delete-btn:hover { background:rgba(255,99,71,0.7); transform:translateY(-2px);}
+
+        @media (max-width:768px) {
+            .nav-links { position:fixed; top:70px; left:-100%; flex-direction:column; background:rgba(102,126,234,0.98); width:100%; padding:20px; transition:left 0.3s;}
+            .nav-links.active { left:0; }
+            .mobile-menu-btn { display:block;}
+            .hero h1 { font-size:2.5em;}
+            .hero p { font-size:1.3em;}
+            .countdown { gap:15px;}
+            .countdown-item { min-width:100px; padding:20px; }
+            .countdown-number { font-size:2.5em;}
+            .section { padding:30px 20px;}
+            h2 { font-size:2em;}
+            .memory-item { flex-direction:column!important;}
+            .memory-photo { width:100%; min-width:auto;}
+            .countdown-mini { right:10px; top:70px; padding:10px;}
+            .countdown-mini-content { gap:10px; font-size:0.8em;}
+        }
+    </style>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<nav>
+    <div class="nav-container">
+        <div class="logo">
+            <span class="heart">❤️</span>
+            <span>Notre Histoire</span>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#accueil" class="nav-link active" onclick="showPage('accueil')">Accueil</a></li>
+            <li><a href="#intro" class="nav-link" onclick="showPage('intro')">Notre Rencontre</a></li>
+            <li><a href="#souvenirs" class="nav-link" onclick="showPage('souvenirs')">2023-2025</a></li>
+            <li><a href="#perspectives" class="nav-link" onclick="showPage('perspectives')">Notre Avenir</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="countdown-mini" id="countdownMini">
+    <div class="countdown-mini-content">
+        <div class="countdown-mini-item">
+            <span class="countdown-mini-number" id="miniYears">0</span>
+            <span>ans</span>
+        </div>
+        <div class="countdown-mini-item">
+            <span class="countdown-mini-number" id="miniMonths">0</span>
+            <span>mois</span>
+        </div>
+        <div class="countdown-mini-item">
+            <span class="countdown-mini-number" id="miniDays">0</span>
+            <span>jours</span>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- PAGE ACCUEIL -->
+    <div id="accueil" class="page active">
+        <div class="hero">
+            <h1>Notre Histoire <span class="heart">💙</span></h1>
+            <p>Depuis le <span id="startDateDisplay">10 novembre 2023</span></p>
+        </div>
+        <div class="text-center">
+            <button class="edit-btn" onclick="editStartDate()">📅 Modifier la date</button>
+        </div>
+        <div class="countdown-section">
+            <h2>Ensemble depuis...</h2>
+            <div class="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="years">0</span>
+                    <span class="countdown-label">Années</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="months">0</span>
+                    <span class="countdown-label">Mois</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="days">0</span>
+                    <span class="countdown-label">Jours</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="hours">0</span>
+                    <span class="countdown-label">Heures</span>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Un Message d'Amour 💜</h2>
+            <div class="intro-content" id="homeMessageDisplay">
+                Deux ans ensemble, et chaque jour avec toi est un cadeau précieux. 
+                Tu illumines ma vie de ton sourire et de ta présence. 
+                Voici à tous nos souvenirs passés et à tous ceux qui restent à créer. 
+                Je t'aime ❤️
+            </div>
+            <div class="text-center">
+                <button class="edit-btn" onclick="editHomeMessage()">✏️ Modifier</button>
+            </div>
+            <div id="homeMessageEdit" class="hidden">
+                <textarea id="homeMessageText"></textarea>
+                <div class="text-center">
+                    <button class="edit-btn" onclick="saveHomeMessage()">💾 Enregistrer</button>
+                    <button class="edit-btn" onclick="cancelHomeEdit()">❌ Annuler</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE INTRO -->
+    <div id="intro" class="page">
+        <div class="section">
+            <h2>Notre Rencontre 💫</h2>
+            <div class="intro-content" id="introDisplay">
+                C'était un jour comme les autres, jusqu'à ce que nos regards se croisent...
+                [Ajoutez ici l'histoire de votre rencontre : où, quand, comment, vos premières impressions...]
+                Et depuis ce jour magique, notre histoire a commencé à s'écrire.
+            </div>
+            <div class="text-center">
+                <button class="edit-btn" onclick="editIntro()">✏️ Personnaliser notre histoire</button>
+            </div>
+            <div id="introEdit" class="hidden">
+                <textarea id="introText"></textarea>
+                <div class="text-center">
+                    <button class="edit-btn" onclick="saveIntro()">💾 Enregistrer</button>
+                    <button class="edit-btn" onclick="cancelIntroEdit()">❌ Annuler</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PAGE SOUVENIRS -->
+    <div id="souvenirs" class="page">
+        <div class="section">
+            <h2>Nos Plus Beaux Moments 📸</h2>
+            <p style="text-align:center; font-size:1.2em; opacity:0.9; margin-bottom:40px;">
+                Chaque photo raconte une partie de notre histoire...
+            </p>
+            <div class="timeline" id="memoriesContainer">
+                <!-- Les souvenirs seront ajoutés dynamiquement ici -->
+            </div>
+            <button class="add-memory-btn" onclick="addNewMemory()">
+                ➕ Ajouter un souvenir
+            </button>
+        </div>
+    </div>
+    
+    <!-- PAGE PERSPECTIVES -->
+    <div id="perspectives" class="page">
+        <div class="section">
+            <h2>Notre Avenir Ensemble 🌟</h2>
+            <div class="perspective-box">
+                <h3>Mes Rêves Pour Nous 💙</h3>
+                <div class="perspective-content" id="perspective1Display">
+                    Je rêve de tous les voyages que nous ferons ensemble, des maisons que nous construirons, des rires que nous partagerons...
+                    [Partagez vos espoirs, vos projets, vos rêves pour votre avenir à deux...]
+                </div>
+                <div class="signature">- Avec tout mon amour 💙</div>
+                <div class="text-center">
+                    <button class="edit-btn" onclick="editPerspective(1)">✏️ Personnaliser</button>
+                </div>
+                <div id="perspective1Edit" class="hidden">
+                    <textarea id="perspective1Text"></textarea>
+                    <div class="text-center">
+                        <button class="edit-btn" onclick="savePerspective(1)">💾 Enregistrer</button>
+                        <button class="edit-btn" onclick="cancelPerspectiveEdit(1)">❌ Annuler</button>
+                    </div>
+                </div>
+            </div>
+            <div class="perspective-box">
+                <h3>Mes Rêves Pour Nous 💜</h3>
+                <div class="perspective-content" id="perspective2Display">
+                    [Espace réservé pour que ta copine puisse ajouter ses propres perspectives et rêves pour votre avenir...]
+                    Clique sur "Ajouter mes rêves" pour écrire ta vision de notre futur ensemble.
+                </div>
+                <div class="signature">- Avec tout mon amour 💜</div>
+                <div class="text-center">
+                    <button class="edit-btn" onclick="editPerspective(2)">✏️ Ajouter mes rêves</button>
+                </div>
+                <div id="perspective2Edit" class="hidden">
+                    <textarea id="perspective2Text"></textarea>
+                    <div class="text-center">
+                        <button class="edit-btn" onclick="savePerspective(2)">💾 Enregistrer</button>
+                        <button class="edit-btn" onclick="cancelPerspectiveEdit(2)">❌ Annuler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Particules animées
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 60; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        particlesContainer.appendChild(particle);
+    }
+
+    // Navigation
+    let currentPage = 'accueil';
+    function showPage(pageName) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageName).classList.add('active');
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + pageName) link.classList.add('active');
+        });
+        document.getElementById('countdownMini').style.display = (pageName === 'accueil') ? 'none' : 'block';
+        document.getElementById('navLinks').classList.remove('active');
+        window.scrollTo(0, 0);
+        currentPage = pageName;
+    }
+    function toggleMenu() {
+        document.getElementById('navLinks').classList.toggle('active');
+    }
+    document.addEventListener('click', function(event) {
+        const nav = document.getElementById('navLinks');
+        const btn = document.querySelector('.mobile-menu-btn');
+        if (!nav.contains(event.target) && !btn.contains(event.target)) nav.classList.remove('active');
+    });
+
+    // Sauvegarde localStorage
+    function saveToStorage(key, value) {
+        try { localStorage.setItem(key, value); } catch(e) {}
+    }
+    function loadFromStorage(key, defaultValue) {
+        try { return localStorage.getItem(key) || defaultValue; } catch(e) { return defaultValue;}
+    }
+
+    // Date personnalisable
+    function getStartDateISO() {
+        return loadFromStorage('startDate', '2023-11-10');
+    }
+    function updateCountdown() {
+        const dateStr = getStartDateISO();
+        const dateAffich = new Date(dateStr);
+        document.getElementById('startDateDisplay').textContent =
+             dateAffich.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        const startDate = new Date(dateStr + 'T00:00:00');
+        const now = new Date(), diff = now - startDate;
+        const years = Math.floor(diff / (1000*60*60*24*365.25));
+        const months = Math.floor((diff % (1000*60*60*24*365.25)) / (1000*60*60*24*30.44));
+        const days = Math.floor((diff % (1000*60*60*24*30.44)) / (1000*60*60*24));
+        const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+        document.getElementById('years').textContent = years;
+        document.getElementById('months').textContent = months;
+        document.getElementById('days').textContent = days;
+        document.getElementById('hours').textContent = hours;
+        document.getElementById('miniYears').textContent = years;
+        document.getElementById('miniMonths').textContent = months;
+        document.getElementById('miniDays').textContent = days;
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 3600000);
+
+    function editStartDate() {
+        const newDate = prompt('Entrez la date de début (format: AAAA-MM-JJ):', getStartDateISO());
+        if (newDate) {
+            saveToStorage('startDate', newDate);
+            updateCountdown();
+        }
+    }
+
+    // Message d'accueil
+    let originalHomeMessage = '';
+    function editHomeMessage() {
+        const display = document.getElementById('homeMessageDisplay');
+        const edit = document.getElementById('homeMessageEdit');
+        const textarea = document.getElementById('homeMessageText');
+        originalHomeMessage = display.textContent.trim();
+        textarea.value = originalHomeMessage;
+        display.style.display = 'none';
+        edit.classList.remove('hidden');
+    }
+    function saveHomeMessage() {
+        const display = document.getElementById('homeMessageDisplay');
+        const edit = document.getElementById('homeMessageEdit');
+        const textarea = document.getElementById('homeMessageText');
+        display.textContent = textarea.value;
+        saveToStorage('homeMessage', textarea.value);
+        display.style.display = 'block';
+        edit.classList.add('hidden');
+    }
+    function cancelHomeEdit() {
+        const display = document.getElementById('homeMessageDisplay');
+        const edit = document.getElementById('homeMessageEdit');
+        display.textContent = originalHomeMessage;
+        display.style.display = 'block';
+        edit.classList.add('hidden');
+    }
+    
+    // Intro
+    let originalIntro = '';
+    function editIntro() {
+        const display = document.getElementById('introDisplay');
+        const edit = document.getElementById('introEdit');
+        const textarea = document.getElementById('introText');
+        originalIntro = display.textContent.trim();
+        textarea.value = originalIntro;
+        display.style.display = 'none';
+        edit.classList.remove('hidden');
+    }
+    function saveIntro() {
+        const display = document.getElementById('introDisplay');
+        const edit = document.getElementById('introEdit');
+        const textarea = document.getElementById('introText');
+        display.textContent = textarea.value;
+        saveToStorage('intro', textarea.value);
+        display.style.display = 'block';
+        edit.classList.add('hidden');
+    }
+    function cancelIntroEdit() {
+        const display = document.getElementById('introDisplay');
+        const edit = document.getElementById('introEdit');
+        display.textContent = originalIntro;
+        display.style.display = 'block';
+        edit.classList.add('hidden');
+    }
+
+    // NOUVELLE FONCTION : Gestion dynamique des souvenirs
+    let memoryCounter = 0;
+    let memories = [];
+
+    // Charger les souvenirs sauvegardés
+    function loadMemories() {
+        const saved = loadFromStorage('memories', null);
+        if (saved) {
+            memories = JSON.parse(saved);
+            memories.forEach(memory => {
+                createMemoryElement(memory);
+            });
+        }
+    }
+
+    // Sauvegarder les souvenirs
+    function saveMemories() {
+        saveToStorage('memories', JSON.stringify(memories));
+    }
+
+    // Ajouter un nouveau souvenir
+    function addNewMemory() {
+        const title = prompt('Titre du souvenir :', 'Un Moment Spécial');
+        if (!title) return;
+        
+        const description = prompt('Description du souvenir :', 'Décrivez ce moment précieux...');
+        if (!description) return;
+
+        memoryCounter++;
+        const memory = {
+            id: Date.now(),
+            title: title,
+            description: description,
+            photo: null
+        };
+        
+        memories.push(memory);
+        createMemoryElement(memory);
+        saveMemories();
+    }
+
+    // Créer l'élément HTML pour un souvenir
+    function createMemoryElement(memory) {
+        const container = document.getElementById('memoriesContainer');
+        const memoryDiv = document.createElement('div');
+        memoryDiv.className = 'memory-item';
+        memoryDiv.setAttribute('data-id', memory.id);
+        
+        memoryDiv.innerHTML = `
+            <div class="memory-photo">
+                <div class="photo-container" onclick="selectPhoto(${memory.id})">
+                    <img id="photo-${memory.id}" src="${memory.photo || ''}" alt="Photo souvenir" style="display:${memory.photo ? 'block' : 'none'}">
+                    <span id="placeholder-${memory.id}" style="display:${memory.photo ? 'none' : 'block'}">📷</span>
+                    <input type="file" id="upload-${memory.id}" accept="image/*" style="display:none;" onchange="loadMemoryImage(${memory.id})">
+                </div>
+            </div>
+            <div class="memory-text">
+                <h3 id="title-${memory.id}">${memory.title}</h3>
+                <p id="text-${memory.id}">${memory.description}</p>
+                <div class="text-center">
+                    <button class="edit-btn" onclick="editMemoryItem(${memory.id})">✏️ Modifier</button>
+                    <button class="delete-btn" onclick="deleteMemory(${memory.id})">🗑️ Supprimer</button>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(memoryDiv);
+    }
+
+    // Sélectionner une photo
+    function selectPhoto(id) {
+        document.getElementById(`upload-${id}`).click();
+    }
+
+    // Charger l'image d'un souvenir
+    function loadMemoryImage(id) {
+        const file = document.getElementById(`upload-${id}`).files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(`photo-${id}`);
+                const placeholder = document.getElementById(`placeholder-${id}`);
+                img.src = e.target.result;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                // Mettre à jour dans le tableau
+                const memory = memories.find(m => m.id === id);
+                if (memory) {
+                    memory.photo = e.target.result;
+                    saveMemories();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Modifier un souvenir
+    function editMemoryItem(id) {
+        const memory = memories.find(m => m.id === id);
+        if (!memory) return;
+        
+        const newTitle = prompt('Nouveau titre :', memory.title);
+        if (newTitle) {
+            memory.title = newTitle;
+            document.getElementById(`title-${id}`).textContent = newTitle;
+        }
+        
+        const newDesc = prompt('Nouvelle description :', memory.description);
+        if (newDesc) {
+            memory.description = newDesc;
+            document.getElementById(`text-${id}`).textContent = newDesc;
+        }
+        
+        saveMemories();
+    }
+
+    // Supprimer un souvenir
+    function deleteMemory(id) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce souvenir ?')) return;
+        
+        memories = memories.filter(m => m.id !== id);
+        const element = document.querySelector(`[data-id="${id}"]`);
+        if (element) element.remove();
+        saveMemories();
+    }
+
+    // Perspectives
+    const originalPerspectives = {};
+    function editPerspective(num) {
+        const display = document.getElementById('perspective'+num+'Display');
+        const edit = document.getElementById('perspective'+num+'Edit');
+        const textarea = document.getElementById('perspective'+num+'Text');
+        originalPerspectives[num] = display.textContent.trim();
+        textarea.value = originalPerspectives[num];
+        display.style.display = 'none';
+        display.nextElementSibling.style.display = 'none';
+        edit.classList.remove('hidden');
+    }
+    function savePerspective(num) {
+        const display = document.getElementById('perspective'+num+'Display');
+        const edit = document.getElementById('perspective'+num+'Edit');
+        const textarea = document.getElementById('perspective'+num+'Text');
+        display.textContent = textarea.value;
+        saveToStorage('perspective'+num, textarea.value);
+        display.style.display = 'block';
+        display.nextElementSibling.style.display = 'block';
+        edit.classList.add('hidden');
+    }
+    function cancelPerspectiveEdit(num) {
+        const display = document.getElementById('perspective'+num+'Display');
+        const edit = document.getElementById('perspective'+num+'Edit');
+        display.textContent = originalPerspectives[num];
+        display.style.display = 'block';
+        display.nextElementSibling.style.display = 'block';
+        edit.classList.add('hidden');
+    }
+
+    // Chargement au démarrage
+    window.addEventListener('DOMContentLoaded', function() {
+        if (loadFromStorage('homeMessage')) document.getElementById('homeMessageDisplay').textContent = loadFromStorage('homeMessage');
+        if (loadFromStorage('intro')) document.getElementById('introDisplay').textContent = loadFromStorage('intro');
+        for(let i=1;i<=2;i++) {
+            if (loadFromStorage('perspective'+i)) document.getElementById('perspective'+i+'Display').textContent = loadFromStorage('perspective'+i);
+        }
+        loadMemories(); // Charger les souvenirs sauvegardés
+        updateCountdown();
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => { e.preventDefault(); });
+    });
+</script>
+</body>
+</html>
