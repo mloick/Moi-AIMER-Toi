@@ -118,6 +118,7 @@
             <span class="heart">❤️</span>
             <span>Moi AIMER Toi</span>
         </div>
+            <button id="authBtn" class="edit-btn" style="margin-left:10px;" onclick="handleAuth()">Login</button>
         <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
         <ul class="nav-links" id="navLinks">
             <li><a href="#accueil" class="nav-link active" onclick="showPage('accueil')">Accueil</a></li>
@@ -272,9 +273,7 @@ Depuis ce jour-là, c’est juste le bonheur. Deux années pleines d’amour, de
             <div class="perspective-box">
                 <h3>Mes Rêves Pour Nous 💜</h3>
                 <div class="perspective-content" id="perspective2Display">
-                    [Espace réservé pour que ta copine puisse ajouter ses propres perspectives et rêves pour votre avenir...]
-                    Clique sur "Ajouter mes rêves" pour écrire ta vision de notre futur ensemble.
-                </div>
+                    C'est a toi BIG MAMAAAA de me dire ce que tu espère pour nous! Je T'AIME ❤️
                 <div class="signature">- Avec tout mon amour 💜</div>
                 <div class="text-center">
                     <button class="edit-btn" onclick="editPerspective(2)">✏️ Ajouter mes rêves</button>
@@ -292,7 +291,11 @@ Depuis ce jour-là, c’est juste le bonheur. Deux années pleines d’amour, de
 </div>
 
 <script>
-    // Particules animées
+    // API config
+    const API_BASE = 'http://localhost:3001';
+    const API_KEY = 'dev-key'; // fallback API key for local dev
+
+    // Particles
     const particlesContainer = document.getElementById('particles');
     for (let i = 0; i < 60; i++) {
         const particle = document.createElement('div');
@@ -317,32 +320,22 @@ Depuis ce jour-là, c’est juste le bonheur. Deux années pleines d’amour, de
         window.scrollTo(0, 0);
         currentPage = pageName;
     }
-    function toggleMenu() {
-        document.getElementById('navLinks').classList.toggle('active');
-    }
+    function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
     document.addEventListener('click', function(event) {
         const nav = document.getElementById('navLinks');
         const btn = document.querySelector('.mobile-menu-btn');
         if (!nav.contains(event.target) && !btn.contains(event.target)) nav.classList.remove('active');
     });
 
-    // Sauvegarde localStorage
-    function saveToStorage(key, value) {
-        try { localStorage.setItem(key, value); } catch(e) {}
-    }
-    function loadFromStorage(key, defaultValue) {
-        try { return localStorage.getItem(key) || defaultValue; } catch(e) { return defaultValue;}
-    }
+    // State
+    let memories = [];
+    let coupleData = { start_date: '2023-11-10' };
 
-    // Date personnalisable
-    function getStartDateISO() {
-        return loadFromStorage('startDate', '2023-11-10');
-    }
+    // Countdown
     function updateCountdown() {
-        const dateStr = getStartDateISO();
+        const dateStr = coupleData.start_date || '2023-11-10';
         const dateAffich = new Date(dateStr);
-        document.getElementById('startDateDisplay').textContent =
-             dateAffich.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('startDateDisplay').textContent = dateAffich.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
         const startDate = new Date(dateStr + 'T00:00:00');
         const now = new Date(), diff = now - startDate;
         const years = Math.floor(diff / (1000*60*60*24*365.25));
@@ -357,245 +350,258 @@ Depuis ce jour-là, c’est juste le bonheur. Deux années pleines d’amour, de
         document.getElementById('miniMonths').textContent = months;
         document.getElementById('miniDays').textContent = days;
     }
-    updateCountdown();
-    setInterval(updateCountdown, 3600000);
 
-    function editStartDate() {
-        const newDate = prompt('Entrez la date de début (format: AAAA-MM-JJ):', getStartDateISO());
-        if (newDate) {
-            saveToStorage('startDate', newDate);
-            updateCountdown();
+    // API helpers
+    function getAuthHeaders() {
+        const token = localStorage.getItem('auth_token');
+        if (token) return { 'Authorization': 'Bearer ' + token };
+        if (API_KEY) return { 'X-API-KEY': API_KEY };
+        return {};
+    }
+
+    async function apiFetch(path, opts = {}) {
+        opts.headers = Object.assign({}, getAuthHeaders(), opts.headers || {});
+        const res = await fetch(API_BASE + path, opts);
+        if (!res.ok) throw new Error(`API ${path} error: ${res.status}`);
+        return res.json();
+    }
+
+    // Auth helpers
+    function updateAuthButton() {
+        const btn = document.getElementById('authBtn');
+        const token = localStorage.getItem('auth_token');
+        btn.textContent = token ? 'Logout' : 'Login';
+    }
+
+    async function handleAuth() {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            // logout
+            localStorage.removeItem('auth_token');
+            updateAuthButton();
+            alert('Logged out');
+            return;
         }
-    }
-
-    // Message d'accueil
-    let originalHomeMessage = '';
-    function editHomeMessage() {
-        const display = document.getElementById('homeMessageDisplay');
-        const edit = document.getElementById('homeMessageEdit');
-        const textarea = document.getElementById('homeMessageText');
-        originalHomeMessage = display.textContent.trim();
-        textarea.value = originalHomeMessage;
-        display.style.display = 'none';
-        edit.classList.remove('hidden');
-    }
-    function saveHomeMessage() {
-        const display = document.getElementById('homeMessageDisplay');
-        const edit = document.getElementById('homeMessageEdit');
-        const textarea = document.getElementById('homeMessageText');
-        display.textContent = textarea.value;
-        saveToStorage('homeMessage', textarea.value);
-        display.style.display = 'block';
-        edit.classList.add('hidden');
-    }
-    function cancelHomeEdit() {
-        const display = document.getElementById('homeMessageDisplay');
-        const edit = document.getElementById('homeMessageEdit');
-        display.textContent = originalHomeMessage;
-        display.style.display = 'block';
-        edit.classList.add('hidden');
-    }
-    
-    // Intro
-    let originalIntro = '';
-    function editIntro() {
-        const display = document.getElementById('introDisplay');
-        const edit = document.getElementById('introEdit');
-        const textarea = document.getElementById('introText');
-        originalIntro = display.textContent.trim();
-        textarea.value = originalIntro;
-        display.style.display = 'none';
-        edit.classList.remove('hidden');
-    }
-    function saveIntro() {
-        const display = document.getElementById('introDisplay');
-        const edit = document.getElementById('introEdit');
-        const textarea = document.getElementById('introText');
-        display.textContent = textarea.value;
-        saveToStorage('intro', textarea.value);
-        display.style.display = 'block';
-        edit.classList.add('hidden');
-    }
-    function cancelIntroEdit() {
-        const display = document.getElementById('introDisplay');
-        const edit = document.getElementById('introEdit');
-        display.textContent = originalIntro;
-        display.style.display = 'block';
-        edit.classList.add('hidden');
-    }
-
-    // NOUVELLE FONCTION : Gestion dynamique des souvenirs
-    let memoryCounter = 0;
-    let memories = [];
-
-    // Charger les souvenirs sauvegardés
-    function loadMemories() {
-        const saved = loadFromStorage('memories', null);
-        if (saved) {
-            memories = JSON.parse(saved);
-            memories.forEach(memory => {
-                createMemoryElement(memory);
+        // login flow
+        const username = prompt('Admin username:', 'admin');
+        if (!username) return;
+        const password = prompt('Admin password:');
+        if (!password) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password })
             });
+            if (!res.ok) throw new Error('Login failed');
+            const data = await res.json();
+            localStorage.setItem('auth_token', data.token);
+            updateAuthButton();
+            alert('Logged in');
+        } catch (err) {
+            console.error('Login error', err);
+            alert('Login failed');
         }
     }
 
-    // Sauvegarder les souvenirs
-    function saveMemories() {
-        saveToStorage('memories', JSON.stringify(memories));
+    // Load initial data from backend
+    async function loadInitialData() {
+        try {
+            const couple = await apiFetch('/api/couple-data');
+            coupleData = couple || coupleData;
+            document.getElementById('homeMessageDisplay').textContent = couple.home_message || document.getElementById('homeMessageDisplay').textContent;
+            document.getElementById('introDisplay').textContent = couple.intro_text || document.getElementById('introDisplay').textContent;
+            updateCountdown();
+
+            const mems = await apiFetch('/api/memories');
+            memories = mems || [];
+            document.getElementById('memoriesContainer').innerHTML = '';
+            memories.forEach(createMemoryElement);
+
+            const perspectives = await apiFetch('/api/perspectives');
+            perspectives.forEach(p => {
+                const el = document.getElementById('perspective' + p.perspective_number + 'Display');
+                if (el) el.textContent = p.content;
+            });
+        } catch (err) {
+            console.error('Error loading data:', err);
+        }
     }
 
-    // Ajouter un nouveau souvenir
-    function addNewMemory() {
-        const title = prompt('Titre du souvenir :', 'Un Moment Spécial');
-        if (!title) return;
-        
-        const description = prompt('Description du souvenir :', 'Décrivez ce moment précieux...');
-        if (!description) return;
-
-        memoryCounter++;
-        const memory = {
-            id: Date.now(),
-            title: title,
-            description: description,
-            photo: null
-        };
-        
-        memories.push(memory);
-        createMemoryElement(memory);
-        saveMemories();
-    }
-
-    // Créer l'élément HTML pour un souvenir
+    // Memories UI
     function createMemoryElement(memory) {
         const container = document.getElementById('memoriesContainer');
         const memoryDiv = document.createElement('div');
         memoryDiv.className = 'memory-item';
         memoryDiv.setAttribute('data-id', memory.id);
         
+        const photoHtml = memory.photo_url ? `<img id="photo-${memory.id}" src="${memory.photo_url}" alt="Photo souvenir" style="display:block">` : `<span id="placeholder-${memory.id}">📷</span>`;
+
         memoryDiv.innerHTML = `
             <div class="memory-photo">
                 <div class="photo-container" onclick="selectPhoto(${memory.id})">
-                    <img id="photo-${memory.id}" src="${memory.photo || ''}" alt="Photo souvenir" style="display:${memory.photo ? 'block' : 'none'}">
-                    <span id="placeholder-${memory.id}" style="display:${memory.photo ? 'none' : 'block'}">📷</span>
-                    <input type="file" id="upload-${memory.id}" accept="image/*" style="display:none;" onchange="loadMemoryImage(${memory.id})">
+                    ${photoHtml}
+                    <input type="file" id="upload-${memory.id}" accept="image/*" style="display:none;">
                 </div>
             </div>
             <div class="memory-text">
-                <h3 id="title-${memory.id}">${memory.title}</h3>
-                <p id="text-${memory.id}">${memory.description}</p>
+                <h3 id="title-${memory.id}">${escapeHtml(memory.title)}</h3>
+                <p id="text-${memory.id}">${escapeHtml(memory.description)}</p>
                 <div class="text-center">
                     <button class="edit-btn" onclick="editMemoryItem(${memory.id})">✏️ Modifier</button>
                     <button class="delete-btn" onclick="deleteMemory(${memory.id})">🗑️ Supprimer</button>
                 </div>
             </div>
         `;
-        
+
         container.appendChild(memoryDiv);
+
+        // wire upload input
+        const input = document.getElementById(`upload-${memory.id}`);
+        input.addEventListener('change', () => uploadMemoryPhoto(memory.id));
     }
 
-    // Sélectionner une photo
-    function selectPhoto(id) {
-        document.getElementById(`upload-${id}`).click();
-    }
+    function selectPhoto(id) { document.getElementById(`upload-${id}`).click(); }
 
-    // Charger l'image d'un souvenir
-    function loadMemoryImage(id) {
-        const file = document.getElementById(`upload-${id}`).files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById(`photo-${id}`);
-                const placeholder = document.getElementById(`placeholder-${id}`);
-                img.src = e.target.result;
-                img.style.display = 'block';
-                placeholder.style.display = 'none';
-                
-                // Mettre à jour dans le tableau
-                const memory = memories.find(m => m.id === id);
-                if (memory) {
-                    memory.photo = e.target.result;
-                    saveMemories();
+    async function uploadMemoryPhoto(id) {
+        const input = document.getElementById(`upload-${id}`);
+        const file = input.files[0];
+        if (!file) return;
+        const form = new FormData();
+        form.append('photo', file);
+        // include title/description to keep them
+        const mem = memories.find(m => m.id === id);
+        form.append('title', mem ? mem.title : '');
+        form.append('description', mem ? mem.description : '');
+
+        try {
+            const res = await fetch(`${API_BASE}/api/memories/${id}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: form
+            });
+            if (!res.ok) throw new Error('Upload failed');
+            // refresh memory
+            const updated = await apiFetch(`/api/memories/${id}`);
+            const img = document.getElementById(`photo-${id}`);
+            const placeholder = document.getElementById(`placeholder-${id}`);
+            if (updated.photo_url) {
+                if (img) img.src = updated.photo_url;
+                else {
+                    // replace placeholder with img
+                    const container = document.querySelector(`[data-id="${id}"] .photo-container`);
+                    container.innerHTML = `<img id="photo-${id}" src="${updated.photo_url}" style="display:block"> <input type="file" id="upload-${id}" accept="image/*" style="display:none;">`;
+                    document.getElementById(`upload-${id}`).addEventListener('change', () => uploadMemoryPhoto(id));
                 }
-            };
-            reader.readAsDataURL(file);
+                if (placeholder) placeholder.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Error uploading photo:', err);
+            alert('Erreur lors de l envoi de la photo');
         }
     }
 
-    // Modifier un souvenir
-    function editMemoryItem(id) {
-        const memory = memories.find(m => m.id === id);
-        if (!memory) return;
-        
-        const newTitle = prompt('Nouveau titre :', memory.title);
-        if (newTitle) {
-            memory.title = newTitle;
+    async function addNewMemory() {
+        const title = prompt('Titre du souvenir :', 'Un Moment Spécial');
+        if (!title) return;
+        const description = prompt('Description du souvenir :', 'Décrivez ce moment précieux...');
+        if (!description) return;
+        try {
+            const created = await apiFetch('/api/memories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            });
+            memories.unshift(created);
+            createMemoryElement(created);
+        } catch (err) {
+            console.error('Error creating memory:', err);
+            alert('Impossible de créer le souvenir');
+        }
+    }
+
+    async function editMemoryItem(id) {
+        const mem = memories.find(m => m.id === id);
+        if (!mem) return;
+        const newTitle = prompt('Nouveau titre :', mem.title);
+        if (!newTitle) return;
+        const newDesc = prompt('Nouvelle description :', mem.description);
+        if (!newDesc) return;
+        try {
+            await apiFetch(`/api/memories/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newTitle, description: newDesc })
+            });
+            mem.title = newTitle; mem.description = newDesc;
             document.getElementById(`title-${id}`).textContent = newTitle;
-        }
-        
-        const newDesc = prompt('Nouvelle description :', memory.description);
-        if (newDesc) {
-            memory.description = newDesc;
             document.getElementById(`text-${id}`).textContent = newDesc;
-        }
-        
-        saveMemories();
+        } catch (err) { console.error(err); alert('Erreur lors de la mise à jour'); }
     }
 
-    // Supprimer un souvenir
-    function deleteMemory(id) {
+    async function deleteMemory(id) {
         if (!confirm('Êtes-vous sûr de vouloir supprimer ce souvenir ?')) return;
-        
-        memories = memories.filter(m => m.id !== id);
-        const element = document.querySelector(`[data-id="${id}"]`);
-        if (element) element.remove();
-        saveMemories();
+        try {
+            await fetch(`${API_BASE}/api/memories/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+            memories = memories.filter(m => m.id !== id);
+            const el = document.querySelector(`[data-id="${id}"]`); if (el) el.remove();
+        } catch (err) { console.error(err); alert('Erreur lors de la suppression'); }
     }
 
-    // Perspectives
-    const originalPerspectives = {};
-    function editPerspective(num) {
-        const display = document.getElementById('perspective'+num+'Display');
-        const edit = document.getElementById('perspective'+num+'Edit');
+    // Couple data handlers
+    function editStartDate() {
+        const newDate = prompt('Entrez la date de début (format: AAAA-MM-JJ):', coupleData.start_date);
+        if (!newDate) return;
+        fetch(`${API_BASE}/api/couple-data/start-date`, {
+            method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+            body: JSON.stringify({ start_date: newDate })
+        }).then(r => { if (r.ok) { coupleData.start_date = newDate; updateCountdown(); } else throw r; }).catch(e => { console.error(e); alert('Erreur'); });
+    }
+
+    async function saveHomeMessage() {
+        const textarea = document.getElementById('homeMessageText');
+        try {
+            await fetch(`${API_BASE}/api/couple-data/home-message`, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()), body: JSON.stringify({ home_message: textarea.value }) });
+            document.getElementById('homeMessageDisplay').textContent = textarea.value;
+            document.getElementById('homeMessageEdit').classList.add('hidden');
+        } catch (err) { console.error(err); alert('Erreur'); }
+    }
+
+    async function saveIntro() {
+        const textarea = document.getElementById('introText');
+        try {
+            await fetch(`${API_BASE}/api/couple-data/intro`, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()), body: JSON.stringify({ intro_text: textarea.value }) });
+            document.getElementById('introDisplay').textContent = textarea.value;
+            document.getElementById('introEdit').classList.add('hidden');
+        } catch (err) { console.error(err); alert('Erreur'); }
+    }
+
+    async function savePerspective(num) {
         const textarea = document.getElementById('perspective'+num+'Text');
-        originalPerspectives[num] = display.textContent.trim();
-        textarea.value = originalPerspectives[num];
-        display.style.display = 'none';
-        display.nextElementSibling.style.display = 'none';
-        edit.classList.remove('hidden');
-    }
-    function savePerspective(num) {
-        const display = document.getElementById('perspective'+num+'Display');
-        const edit = document.getElementById('perspective'+num+'Edit');
-        const textarea = document.getElementById('perspective'+num+'Text');
-        display.textContent = textarea.value;
-        saveToStorage('perspective'+num, textarea.value);
-        display.style.display = 'block';
-        display.nextElementSibling.style.display = 'block';
-        edit.classList.add('hidden');
-    }
-    function cancelPerspectiveEdit(num) {
-        const display = document.getElementById('perspective'+num+'Display');
-        const edit = document.getElementById('perspective'+num+'Edit');
-        display.textContent = originalPerspectives[num];
-        display.style.display = 'block';
-        display.nextElementSibling.style.display = 'block';
-        edit.classList.add('hidden');
+        try {
+            await fetch(`${API_BASE}/api/perspectives`, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()), body: JSON.stringify({ perspective_number: num, content: textarea.value }) });
+            document.getElementById('perspective'+num+'Display').textContent = textarea.value;
+            document.getElementById('perspective'+num+'Edit').classList.add('hidden');
+        } catch (err) { console.error(err); alert('Erreur'); }
     }
 
-    // Chargement au démarrage
-    window.addEventListener('DOMContentLoaded', function() {
-        if (loadFromStorage('homeMessage')) document.getElementById('homeMessageDisplay').textContent = loadFromStorage('homeMessage');
-        if (loadFromStorage('intro')) document.getElementById('introDisplay').textContent = loadFromStorage('intro');
-        for(let i=1;i<=2;i++) {
-            if (loadFromStorage('perspective'+i)) document.getElementById('perspective'+i+'Display').textContent = loadFromStorage('perspective'+i);
-        }
-        loadMemories(); // Charger les souvenirs sauvegardés
-        updateCountdown();
-    });
+    // Helpers
+    function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', (e) => { e.preventDefault(); });
-    });
+    // Wire up button-based edit/cancel to reuse existing code areas
+    function editHomeMessage(){
+        const display = document.getElementById('homeMessageDisplay');
+        const edit = document.getElementById('homeMessageEdit');
+        const textarea = document.getElementById('homeMessageText');
+        textarea.value = display.textContent.trim();
+        display.style.display = 'none'; edit.classList.remove('hidden');
+    }
+    function cancelHomeEdit(){ document.getElementById('homeMessageEdit').classList.add('hidden'); document.getElementById('homeMessageDisplay').style.display = 'block'; }
+    function editIntro(){ const display = document.getElementById('introDisplay'); const edit = document.getElementById('introEdit'); const textarea = document.getElementById('introText'); textarea.value = display.textContent.trim(); display.style.display='none'; edit.classList.remove('hidden'); }
+    function cancelIntroEdit(){ document.getElementById('introEdit').classList.add('hidden'); document.getElementById('introDisplay').style.display='block'; }
+    function editPerspective(num){ const display=document.getElementById('perspective'+num+'Display'); const edit=document.getElementById('perspective'+num+'Edit'); const textarea=document.getElementById('perspective'+num+'Text'); textarea.value=display.textContent.trim(); display.style.display='none'; edit.classList.remove('hidden'); }
+    function cancelPerspectiveEdit(num){ document.getElementById('perspective'+num+'Edit').classList.add('hidden'); document.getElementById('perspective'+num+'Display').style.display='block'; }
+
+    // Startup
+    window.addEventListener('DOMContentLoaded', () => { loadInitialData(); setInterval(updateCountdown, 3600000); document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', (e)=>e.preventDefault())); updateAuthButton(); });
 </script>
 </body>
 </html>
